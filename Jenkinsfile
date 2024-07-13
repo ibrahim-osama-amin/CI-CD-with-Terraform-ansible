@@ -13,7 +13,7 @@ pipeline {
         maven 'Maven'
     }
     environment {
-        IMAGE_NAME = 'nanajanashia/demo-app:java-maven-2.0'
+        IMAGE_NAME = 'ibrahimosama/my-repo:java-maven-2.0'
     }
     stages {
         stage('build app') {
@@ -34,6 +34,7 @@ pipeline {
                 }
             }
         }
+/*
         stage('provision server') {
             environment {
                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
@@ -78,3 +79,4 @@ pipeline {
         }
     }
 }
+*/
