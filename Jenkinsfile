@@ -75,9 +75,11 @@ pipeline {
                    def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
 
                    sshagent(['server-ssh-key']) {
+                        echo 'Copying docker compose and entry script'
                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
-                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} '${shellCmd}'"
+                       echo 'SSHing to the server to do the script that will bring the container up'
+                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
                    }
                 }
             }
