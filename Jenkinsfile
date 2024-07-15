@@ -80,8 +80,13 @@ pipeline {
                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
                        sh 'Debugging interpolation in the below line \${ec2Instance} \${shellCmd}'
                        sh """
-                       ssh -o StrictHostKeyChecking=no \${ec2Instance} \${shellCmd}
-                       """
+                            ssh -o StrictHostKeyChecking=no ${ec2Instance} '
+                            echo IMAGE_NAME=${IMAGE_NAME}
+                            echo DOCKER_CREDS_USR=${DOCKER_CREDS_USR}
+                            echo DOCKER_CREDS_PSW=${DOCKER_CREDS_PSW}
+                            bash /home/ec2-user/server-cmds.sh ${IMAGE_NAME} ${DOCKER_CREDS_USR} ${DOCKER_CREDS_PSW}
+                            '
+                        """
                    }
                 }
             }
