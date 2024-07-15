@@ -79,7 +79,7 @@ pipeline {
                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
                        echo 'SSHing to the server to do the script that will bring the container up'
-                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}" //testing//${} for string interpolation
                    }
                 }
             }
