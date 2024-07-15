@@ -45,6 +45,8 @@ pipeline {
                 script {
                     echo 'Provisioning the server using Terraform'
                     dir('terraform') {
+                        echo 'Cleaning previous Terraform state...'
+                        sh 'rm -rf .terraform'
                         echo 'terraform inializing'
                         sh "terraform init -reconfigure" //had to do this becacuse I am not saving the state somewhere else
                         echo 'terraform init done, now applying ....'
