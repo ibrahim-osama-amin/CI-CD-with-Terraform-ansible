@@ -45,7 +45,9 @@ pipeline {
                 script {
                     echo 'Provisioning the server using Terraform'
                     dir('terraform') {
-                        sh "terraform init"
+                        echo 'terraform inializing'
+                        sh "terraform init -reconfigure" //had to do this becacuse I am not saving the state somewhere else
+                        echo 'terraform init done, now applying ....'
                         sh "terraform apply --auto-approve"
                         EC2_PUBLIC_IP = sh(
                             script: "terraform output ec2_public_ip",
