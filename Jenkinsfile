@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 
-library identifier: 'jenkins-shared-library@master', retriever: modernSCM(
+library identifier: 'jenkins-shared-library@main', retriever: modernSCM(
     [$class: 'GitSCMSource',
-     remote: 'https://github.com/ibrahim-osama-amin/Maven-multi-branch-pipeline.git',
-     credentialsId: 'gihub-credentials'
+     remote: 'https://github.com/ibrahim-osama-amin/Jenkins-shared-library.git',
+     credentialsId: 'github-credentials'
     ]
 )
 
@@ -13,7 +13,7 @@ pipeline {
         maven 'Maven'
     }
     environment {
-        IMAGE_NAME = 'ibrahimosama/my-repo:java-maven-2.0'
+        IMAGE_NAME = 'ibrahimosama/my-repo:java-maven-Terraform'
     }
     stages {
         stage('build app') {
@@ -29,12 +29,12 @@ pipeline {
                 script {
                    echo 'building docker image...'
                    buildImage(env.IMAGE_NAME)
+                   echo 'pushing docker image...'
                    dockerLogin()
                    dockerPush(env.IMAGE_NAME)
                 }
             }
         }
-/*
         stage('provision server') {
             environment {
                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
@@ -43,6 +43,7 @@ pipeline {
             }
             steps {
                 script {
+                    echo 'Provisioning the server using Terraform'
                     dir('terraform') {
                         sh "terraform init"
                         sh "terraform apply --auto-approve"
