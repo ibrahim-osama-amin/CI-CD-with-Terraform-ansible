@@ -24,7 +24,7 @@ pipeline {
                }
             }
         }
-        stage('build image') {
+        stage('build and push image') {
             steps {
                 script {
                    echo 'building docker image...'
