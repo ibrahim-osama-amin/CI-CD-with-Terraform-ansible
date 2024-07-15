@@ -78,8 +78,10 @@ pipeline {
                        echo 'Copying docker compose and entry script'
                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
-                       echo 'Debugging interpolation in the below line \${ec2Instance} \${shellCmd}'
-                       sh "ssh -o StrictHostKeyChecking=no \${ec2Instance} \${shellCmd}"
+                       sh 'Debugging interpolation in the below line \${ec2Instance} \${shellCmd}'
+                       sh """
+                       ssh -o StrictHostKeyChecking=no \${ec2Instance} \${shellCmd}
+                       """
                    }
                 }
             }
