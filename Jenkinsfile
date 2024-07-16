@@ -71,7 +71,8 @@ pipeline {
                    echo 'deploying docker image to EC2...'
                    echo "${EC2_PUBLIC_IP}"
                    def test = "'"
-                   def DockerPW = "${test}${DOCKER_CREDS_PSW}"
+                   def DockerPW = "${test}${DOCKER_CREDS_PSW}${test}"
+                   echo "${DockerPW}"
                    def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} ${DockerPW}"
                    echo "${shellCmd}"
                    def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
