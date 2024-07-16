@@ -71,7 +71,7 @@ pipeline {
                    echo 'deploying docker image to EC2...'
                    echo "${EC2_PUBLIC_IP}"
                    def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} ${DOCKER_CREDS_PSW}"
-                   echo "${shellCMD}"
+                   echo "${shellCmd}"
                    def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
 
                    sshagent(['server-ssh-key']) {
@@ -79,7 +79,7 @@ pipeline {
                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
                        echo 'Creating docker-environments.env'
-                        sh 'echo "IMAGE=${IMAGE_NAME}" > docker-compose.env'
+                       sh 'echo "IMAGE=${IMAGE_NAME}" > docker-compose.env'
                        sh "scp -o StrictHostKeyChecking=no docker-compose.env ${ec2Instance}:/home/ec2-user"
                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
                    }
