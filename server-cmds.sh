@@ -2,8 +2,8 @@
 
 echo "Setting Environmental variables"
 
-export DOCKER_USER="$1"
-export DOCKER_PWD="$2"
+DOCKER_USER="$1"
+DOCKER_PWD="$2"
 
 echo "logging into docker"
 echo "$DOCKER_PWD" | sudo docker login -u "$DOCKER_USER" --password-stdin
