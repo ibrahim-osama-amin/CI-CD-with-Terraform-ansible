@@ -70,7 +70,7 @@ pipeline {
 
                    echo 'deploying docker image to EC2...'
                    echo "${EC2_PUBLIC_IP}"
-                       def shellCmd = "bash ./server-cmds.sh ibrahimosama '${DOCKER_TOKEN}'" // Using single quotes around the password to handle special characters
+                       def shellCmd = "bash ./server-cmds.sh ABCD1234 '${DOCKER_TOKEN}'" // I scrambled my docker username or you can add it as a variable whatever
                        def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
 
                    sshagent(['server-ssh-key']) {
@@ -81,7 +81,6 @@ pipeline {
                        sh 'echo "IMAGE=${IMAGE_NAME}" > docker-compose.env'
                        sh "scp -o StrictHostKeyChecking=no docker-compose.env ${ec2Instance}:/home/ec2-user"
                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
-                       //sh 'ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}'
                    }
                 
             }
@@ -89,3 +88,5 @@ pipeline {
     }
 }
 }
+
+//This way to handle configuration and credentials is insecure and inficcient, I recommend you do it using configuration manager and secrets manager like Ansible 
