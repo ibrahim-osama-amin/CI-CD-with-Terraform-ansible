@@ -70,9 +70,10 @@ pipeline {
 
                    echo 'deploying docker image to EC2...'
                    echo "${EC2_PUBLIC_IP}"
-                   def test = "'"
-                   def DockerPW = "${test}${DOCKER_CREDS_PSW}${test}" //string concatenation because some passwords contain special characters which is annoying for bash
-                   def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} ${DockerPW}" // Passing the password concatenated 'PASSWORD'
+                   withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', usernameVariable: 'DOCKER_CREDS_USR', passwordVariable: 'DOCKER_CREDS_PSW')]) {
+                       def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} '${DOCKER_CREDS_PSW}'" // Using single quotes around the password to handle special characters
+                       def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
+                   def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} '${DockerPW}" // Passing the password concatenated 'PASSWORD'
                    def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
 
                    sshagent(['server-ssh-key']) {
