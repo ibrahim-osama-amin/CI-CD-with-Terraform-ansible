@@ -60,9 +60,6 @@ pipeline {
             }
         }
         stage('deploy') {
-            environment {
-                DOCKER_CREDS = credentials('docker-hub-repo')
-            }
             steps {
                 script {
                    echo "waiting for EC2 server to initialize" 
@@ -73,7 +70,7 @@ pipeline {
                    withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', usernameVariable: 'DOCKER_CREDS_USR', passwordVariable: 'DOCKER_CREDS_PSW')]) {
                        def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} '${DOCKER_CREDS_PSW}'" // Using single quotes around the password to handle special characters
                        def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
-                       
+
                    sshagent(['server-ssh-key']) {
                        echo 'Copying docker compose and entry script'
                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
@@ -81,7 +78,7 @@ pipeline {
                        echo 'Creating docker-environments.env'
                        sh 'echo "IMAGE=${IMAGE_NAME}" > docker-compose.env'
                        sh "scp -o StrictHostKeyChecking=no docker-compose.env ${ec2Instance}:/home/ec2-user"
-                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+                       sh 'ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}'
                    }
                 }
             }
