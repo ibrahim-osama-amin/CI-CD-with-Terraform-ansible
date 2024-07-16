@@ -61,7 +61,7 @@ pipeline {
         }
         stage('deploy') {
             environment{
-                DOCKER_TOKEN = credentials('docker-hub-repo-access-token')
+                DOCKER_TOKEN = credentials('docker-hub-repo-access-token') //I am using access token instead of credentials, because they don't contain special characters and they will not mess up the bash script
             }
             steps {
                 script {
