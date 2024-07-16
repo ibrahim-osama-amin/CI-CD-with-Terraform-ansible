@@ -80,8 +80,8 @@ pipeline {
                        echo 'Creating docker-environments.env'
                        sh 'echo "IMAGE=${IMAGE_NAME}" > docker-compose.env'
                        sh "scp -o StrictHostKeyChecking=no docker-compose.env ${ec2Instance}:/home/ec2-user"
-                       //sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
-                       sh 'ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}'
+                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+                       //sh 'ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}'
                    }
                 
             }
