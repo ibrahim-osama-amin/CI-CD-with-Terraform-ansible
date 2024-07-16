@@ -61,7 +61,7 @@ pipeline {
         }
         stage('deploy') {
             environment{
-                DOCKER_CREDS = credentials('docker-hub-repo')
+                DOCKER_CREDS = credentials('docker-hub-repo-access-token')
             }
             steps {
                 script {
@@ -70,7 +70,7 @@ pipeline {
 
                    echo 'deploying docker image to EC2...'
                    echo "${EC2_PUBLIC_IP}"
-                       def shellCmd = "bash ./server-cmds.sh ${DOCKER_CREDS_USR} '${DOCKER_CREDS_PSW}'" // Using single quotes around the password to handle special characters
+                       def shellCmd = "bash ./server-cmds.sh ibrahimosama '${DOCKER_CREDS_PSW}'" // Using single quotes around the password to handle special characters
                        def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
 
                    sshagent(['server-ssh-key']) {
