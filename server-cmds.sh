@@ -2,8 +2,8 @@
 
 echo "Setting Environmental variables"
 
-export IMAGE=$1
-export DOCKER_USER=$2
+export IMAGE="$1"
+export DOCKER_USER="$2"
 export DOCKER_PWD="$3"
 
 echo "logging into docker"
