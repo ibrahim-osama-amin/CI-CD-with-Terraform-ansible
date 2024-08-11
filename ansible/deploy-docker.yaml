@@ -1,6 +1,6 @@
 ---
 - name: Install docker
-  hosts: ec2
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: Ensure docker and libxcrypt-compat are installed
@@ -14,7 +14,7 @@
 
   
 - name: Install docker compose V2 
-  hosts: ec2
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: Create directory for Docker CLI plugins
@@ -41,7 +41,7 @@
       when: docker_compose_version.rc == 0
 
 - name: Start docker 
-  hosts: ec2
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: Ensure docker is running 
@@ -51,7 +51,7 @@
 
 
 - name: Add ec2-user to docker group 
-  hosts: ec2
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: Add ec2-user to docker group 
@@ -63,7 +63,7 @@
       meta: reset_connection
 
 - name: Start docker containers from docker-compose file
-  hosts: ec2
+  hosts: aws_ec2
   vars_files:
     - project-vars
   tasks:
