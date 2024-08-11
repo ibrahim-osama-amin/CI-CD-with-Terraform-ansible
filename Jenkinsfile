@@ -14,13 +14,28 @@ pipeline {
     }
     environment {
         IMAGE_NAME = 'ibrahimosama/my-repo:java-maven-Terraform'
+        ANSIBLE_SERVER = "192.168.111.136"
     }
     stages {
+        stage('increment version') {
+            steps {
+                script {
+                    echo 'incrementing app version...'
+                    sh 'mvn build-helper:parse-version versions:set \
+                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
+                        versions:commit'
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>' //reading the new version value from pom.xml 
+                    def version = matcher[0][1] //access the first child element and the first file in it (parsing xml files)
+                    env.IMAGE_NAME = "$version-$BUILD_NUMBER" //build number environment variable from jenkins
+                } 
+            }
+        }
+
         stage('build app') {
             steps {
                script {
                   echo 'building application jar...'
-                  buildJar()
+                  sh 'mvn clean package' //to delete the old jar file before creating the new file
                }
             }
         }
@@ -59,33 +74,55 @@ pipeline {
                 }
             }
         }
-        stage('deploy') {
-            environment{
-                DOCKER_TOKEN = credentials('docker-hub-repo-access-token') //I am using access token instead of credentials, because they don't contain special characters and they will not mess up the bash script
-            }
+    stage ("Deploy the container using Ansible"){
             steps {
                 script {
-                   echo "waiting for EC2 server to initialize" 
-                   sleep(time: 50, unit: "SECONDS") 
-
-                   echo 'deploying docker image to EC2...'
-                   echo "${EC2_PUBLIC_IP}"
-                       def shellCmd = "bash ./server-cmds.sh ABCD1234 '${DOCKER_TOKEN}'" // I scrambled my docker username or you can add it as a variable whatever
-                       def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
-
-                   sshagent(['server-ssh-key']) {
-                       echo 'Copying docker compose and entry script'
-                       sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
-                       sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
-                       echo 'Creating docker-environments.env'
-                       sh 'echo "IMAGE=${IMAGE_NAME}" > docker-compose.env'
-                       sh "scp -o StrictHostKeyChecking=no docker-compose.env ${ec2Instance}:/home/ec2-user"
-                       sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
-                   }
-                
+                    echo "copying all neccessary files to ansible control node"
+                    sshagent(['ansible-server']) {
+                        sh "scp -o StrictHostKeyChecking=no ansible/* root@${ANSIBLE_SERVER}:/root/" //copy ansible files
+                        withCredentials([sshUserPrivateKey(credentialsId: 'paris-eu-west-3', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+                            sh 'scp $keyfile root@$ANSIBLE_SERVER:/root/ssh-key.pem' //copy the AWS private key to ansible
+                        }
+                    }
+                }
             }
         }
+    
+    stage("execute ansible playbook") {
+            steps {
+                script {
+                    echo "calling ansible playbook to configure ec2 instances"
+                    def remote = [:]
+                    remote.name = "ansible-server"
+                    remote.host = ANSIBLE_SERVER
+                    remote.allowAnyHosts = true
+
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server', keyFileVariable: 'keyfile', usernameVariable: 'user')]){
+                        remote.user = user
+                        remote.identityFile = keyfile
+                        sshCommand remote: remote, command: "ansible-playbook my-playbook.yaml"
+                    }
+                }
+            }
     }
+
+
+    stage('commit version update') {
+            steps {
+                script {
+                    echo 'Committing version update to Github'
+                    withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        // git config here for the first time run
+                        sh 'git config --global user.email "iosama.amin@gmail.com"'
+                        sh 'git config --global user.name "jenkins"'
+                        sh "git remote set-url origin https://${PASS}@github.com/ibrahim-osama-amin/CI-CD-with-Terraform-ansible.git"
+                        sh 'git add .'
+                        sh 'git commit -m "CI: version bump"'
+                        sh 'git push origin HEAD:main'
+                    }
+                }
+            }
+}
 }
 }
 
