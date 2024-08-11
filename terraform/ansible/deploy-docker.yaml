@@ -1,0 +1,85 @@
+---
+- name: Install docker
+  hosts: ec2
+  become: yes
+  tasks:
+    - name: Ensure docker and libxcrypt-compat are installed
+      yum: 
+        name:
+          - docker
+          - libxcrypt-compat
+          - python3-pip
+        update_cache: yes
+        state: present
+
+  
+- name: Install docker compose V2 
+  hosts: ec2
+  become: yes
+  tasks:
+    - name: Create directory for Docker CLI plugins
+      file:
+        path: /usr/local/lib/docker/cli-plugins
+        state: directory
+        mode: '0755'
+    - name: Download Docker Compose V2 binary
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.18.0/docker-compose-linux-x86_64
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: '0755'
+    - name: Make Docker Compose binary executable
+      file:
+        path: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: '0755'
+    - name: Verify Docker Compose installation
+      command: docker compose version
+      register: docker_compose_version
+      ignore_errors: yes
+    - name: Show Docker Compose version
+      debug:
+        msg: "{{ docker_compose_version.stdout }}"
+      when: docker_compose_version.rc == 0
+
+- name: Start docker 
+  hosts: ec2
+  become: yes
+  tasks:
+    - name: Ensure docker is running 
+      systemd:
+        name: docker
+        state: started
+
+
+- name: Add ec2-user to docker group 
+  hosts: ec2
+  become: yes
+  tasks:
+    - name: Add ec2-user to docker group 
+      user: 
+        name: ec2-user
+        groups: docker 
+        append: yes 
+    - name: Reconnect to server session 
+      meta: reset_connection
+
+- name: Start docker containers from docker-compose file
+  hosts: ec2
+  vars_files:
+    - project-vars
+  tasks:
+    - name: Copy Docker compose
+      copy: 
+        src: /root/ansible/Ansible/docker-compose.yaml
+        dest: /home/ec2-user  
+    - name: Docker login
+      docker_login:
+        username: ibrahimosama
+        password: "{{docker_password}}"
+    - name: Install docker python module
+      pip:
+        name: 
+        - docker
+        - docker-compose
+    - name: Start containers from compose 
+      community.docker.docker_compose_v2:
+        project_src: /home/ec2-user
